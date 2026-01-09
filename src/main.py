@@ -1,6 +1,6 @@
 from fastapi import FastAPI
-from src.shop.models.db import Base, engine
-from src.shop.categories.models import Category
+from src.shop.db import Base, engine
+
 
 # Crear la aplicación
 app = FastAPI(title="Mi Tienda Online")
