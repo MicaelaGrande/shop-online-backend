@@ -7,6 +7,7 @@ class Product(Base):
     id=Column(Integer, primary_key=True, index=True)
     name=Column(String(100), nullable=False)
     description=Column(Text, nullable=False)
-    price=(Numeric(10,2), nullable=False)
-    is_active=Column(Boolean, Default=True)
+    price=Column(Numeric(10,2), nullable=False)
+    is_active=Column(Boolean,default=True)
+    
 
