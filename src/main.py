@@ -1,9 +1,10 @@
 from fastapi import FastAPI
 from src.shop.db import Base, engine
+from src.shop.models import *
 
 
 # Crear la aplicación
-app = FastAPI(title="Mi Tienda Online")
+app = FastAPI(title="Mixshop")
 
 # Crear las tablas en la base de datos
 Base.metadata.create_all(bind=engine)
