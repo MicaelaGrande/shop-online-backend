@@ -8,5 +8,5 @@ __pycache__/
 # variables de entorno
 .env
 
-# base de datos local (si no querés subirla)
+# base de datos local 
 shop.db
