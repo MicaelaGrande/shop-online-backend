@@ -8,7 +8,8 @@ class Media(Base):
 
     id: Mapped[int] = mapped_column(Integer, primary_key=True, autoincrement=True)
     product_id = Column(Integer, ForeignKey("products.id"), nullable=False)
-    url = Column(String(255), nullable=False)
+    url = Column(String(500), nullable=False)
+    public_id = Column(String(255), nullable=False)
     alt_text = Column(String(200), nullable=True)
 
     product = relationship("Product", back_populates="media")
