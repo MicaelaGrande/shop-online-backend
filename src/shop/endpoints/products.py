@@ -17,6 +17,18 @@ def get_products(db: Session = Depends(get_db)):
     return products
 
 
+@router.get("/{product_id}", response_model=ProductPublic)
+def get_products(product_id: int, db: Session = Depends(get_db)):
+    product = (
+        db.query(Product)
+        .filter(Product.id == product_id, Product.is_active == True)
+        .first()
+    )
+    if not product:
+        raise HTTPException(status_code=404, detail="Producto no encontrado")
+    return product
+
+
 @router.post("/", response_model=ProductPublic)
 def create_product(product_in: ProductCreate, db: Session = Depends(get_db)):
     existing = (
