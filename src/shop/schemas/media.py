@@ -2,6 +2,7 @@ from pydantic import BaseModel
 
 class MediaPublic(BaseModel):
     url: str
+    public_id: str
 
     class Config:
-        orm_mode = True
+        from_attributes = True
