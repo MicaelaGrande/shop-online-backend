@@ -1,6 +1,6 @@
 from pydantic import BaseModel, Field, field_validator
 from decimal import Decimal
-from typing import List, Optional
+from typing import list, Optional
 from .category import CategoryPublic
 from .media import MediaPublic
 
@@ -10,8 +10,8 @@ class ProductPublic(BaseModel):
     name: str
     description: str
     price: Decimal
-    categories: List[CategoryPublic]
-    media: List[MediaPublic]
+    categories: list[CategoryPublic]
+    media: list[MediaPublic]
 
     class Config:
         from_attributes = True
@@ -21,8 +21,7 @@ class ProductCreate(BaseModel):
     name: str
     description: Optional[str] = None
     price: Decimal = Field(gt=0)  # Debe ser price>0
-    category_ids: Optional[List[int]] = []
-    media_urls: Optional[List[str]] = []
+    category_ids: Optional[list[int]] = []
 
     @field_validator("name")
     @classmethod
@@ -40,10 +39,4 @@ class ProductCreate(BaseModel):
 
         return name.strip().lower()
 
-    @field_validator("media_urls")
-    @classmethod
-    def validate_media_urls(cls, urls):
-        for url in urls:
-            if not url or not url.strip():
-                raise ValueError("URL/s invalida/s")
-        return urls
+    
