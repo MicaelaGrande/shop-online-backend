@@ -1,6 +1,6 @@
 from pydantic import BaseModel, Field, field_validator
 from decimal import Decimal
-from typing import list, Optional
+from typing import Optional
 from .category import CategoryPublic
 from .media import MediaPublic
 
@@ -21,7 +21,9 @@ class ProductCreate(BaseModel):
     name: str
     description: Optional[str] = None
     price: Decimal = Field(gt=0)  # Debe ser price>0
-    category_ids: Optional[list[int]] = []
+    category_ids: list[int] = Field(default_factory=list)
+
+
 
     @field_validator("name")
     @classmethod

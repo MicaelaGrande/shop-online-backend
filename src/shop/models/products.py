@@ -8,7 +8,7 @@ class Product(Base):
 
     id: Mapped[int] = mapped_column(Integer, primary_key=True, autoincrement=True)
     name = Column(String(100), nullable=False)
-    description = Column(Text, nullable=False)
+    description = Column(Text, nullable=True)
     price = Column(Numeric(10, 2), nullable=False)
     is_active = Column(Boolean, default=True)
 

@@ -1,4 +1,6 @@
-from fastapi import APIRouter, Depends
+from decimal import Decimal
+
+from fastapi import APIRouter, Depends,  File, Form, UploadFile
 from sqlalchemy.orm import Session
 
 
@@ -48,7 +50,8 @@ def create_product(product_in: ProductCreate, db: Session = Depends(get_db)):
 
     if product_in.category_ids:
         categories = (
-            db.query(Category).filter(Category.id.in_(product_in.category_ids)).all()
+            db.query(Category).filter(
+                Category.id.in_(product_in.category_ids)).all()
         )
         product.categories = categories
 
