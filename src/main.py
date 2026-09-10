@@ -4,6 +4,7 @@ from src.shop.db import Base, engine
 from src.shop.models import *
 from src.shop.endpoints.products import router as products_router
 from src.shop.endpoints.categories import router as categories_router
+from src.shop.endpoints.auth import router as auth_router
 
 
 # Crear la aplicación
@@ -21,6 +22,7 @@ Base.metadata.create_all(bind=engine)
 
 app.include_router(products_router)
 app.include_router(categories_router)
+app.include_router(auth_router)
 # Endpoints de prueba
 @app.get("/")
 def home():
