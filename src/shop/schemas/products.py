@@ -8,7 +8,7 @@ from .media import MediaPublic
 class ProductPublic(BaseModel):
     id: int
     name: str
-    description: str
+    description: Optional[str] = None
     price: Decimal
     categories: list[CategoryPublic]
     media: list[MediaPublic]
