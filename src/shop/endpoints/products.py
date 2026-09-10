@@ -1,13 +1,11 @@
-from decimal import Decimal
-
-from fastapi import APIRouter, Depends,  File, Form, UploadFile
+from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
 
 
 from src.shop.db import get_db
-from src.shop.models import Product, Category, Media
+from src.shop.models import Product, Category, Admin
 from src.shop.schemas.products import ProductPublic, ProductCreate
-from fastapi import HTTPException
+from src.shop.dependencies import get_current_admin
 
 router = APIRouter(prefix="/products", tags=["products"])
 
@@ -32,7 +30,11 @@ def get_products(product_id: int, db: Session = Depends(get_db)):
 
 
 @router.post("/", response_model=ProductPublic)
-def create_product(product_in: ProductCreate, db: Session = Depends(get_db)):
+def create_product(
+    product_in: ProductCreate,
+    db: Session = Depends(get_db),
+    current_admin: Admin = Depends(get_current_admin),
+):
     existing = (
         db.query(Product)
         .filter(Product.name == product_in.name, Product.is_active == True)
@@ -50,8 +52,7 @@ def create_product(product_in: ProductCreate, db: Session = Depends(get_db)):
 
     if product_in.category_ids:
         categories = (
-            db.query(Category).filter(
-                Category.id.in_(product_in.category_ids)).all()
+            db.query(Category).filter(Category.id.in_(product_in.category_ids)).all()
         )
         product.categories = categories
 
@@ -66,11 +67,10 @@ def create_product(product_in: ProductCreate, db: Session = Depends(get_db)):
                 status_code=400, detail=f"Categorias inactivas: {', '.join(inactive)}"
             )
 
-    if product_in.media_urls:
-        product.media = [Media(url=url) for url in product_in.media_urls]
-
     db.add(product)
     db.commit()
     db.refresh(product)
 
     return product
+
+

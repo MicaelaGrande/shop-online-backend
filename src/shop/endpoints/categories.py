@@ -2,8 +2,9 @@ from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
 
 from src.shop.db import get_db
-from src.shop.models import Category
+from src.shop.models import Category, Admin
 from src.shop.schemas.category import CategoryCreate, CategoryPublic
+from src.shop.dependencies import get_current_admin
 
 router = APIRouter(prefix="/categories", tags=["categories"])
 
@@ -19,7 +20,11 @@ def get_categories(db: Session = Depends(get_db)):
 
 
 @router.post("/", response_model=CategoryPublic)
-def create_category(category_in: CategoryCreate, db: Session = Depends(get_db)):
+def create_category(
+    category_in: CategoryCreate,
+    db: Session = Depends(get_db),
+    current_admin: Admin = Depends(get_current_admin),
+):
     existing = (db.query(Category).filter(Category.name == category_in.name)).first()
 
     if existing:

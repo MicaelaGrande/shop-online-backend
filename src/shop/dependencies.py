@@ -1,6 +1,5 @@
 import jwt
-from fastapi import Depends, HTTPException, status
-from fastapi.security import OAuth2PasswordBearer
+from fastapi import Depends, HTTPException, status, Request
 from sqlalchemy.orm import Session
 
 from src.settings import settings
@@ -8,13 +7,13 @@ from src.shop.db import get_db
 from src.shop.models import Admin
 
 
-oauth2_scheme = OAuth2PasswordBearer(tokenUrl="/auth/login")
 
 
 def get_current_admin(
-    token: str = Depends(oauth2_scheme),
+    request: Request,
     db: Session = Depends(get_db),
 ) -> Admin:
+    token = request.cookies.get(settings.AUTH_COOKIE_NAME)
     credentials_exception = HTTPException(
         status_code=status.HTTP_401_UNAUTHORIZED,
         detail="No se pudo validar la autenticación",
