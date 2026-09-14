@@ -1,4 +1,4 @@
-from sqlalchemy import Column, Integer, String, ForeignKey
+from sqlalchemy import Boolean, Column, Integer, String, ForeignKey
 from sqlalchemy.orm import relationship, mapped_column, Mapped
 from src.shop.db import Base
 
@@ -11,5 +11,6 @@ class Media(Base):
     url = Column(String(500), nullable=False)
     public_id = Column(String(255), nullable=False)
     alt_text = Column(String(200), nullable=True)
+    sort_order = Column(Integer, nullable=False, default=0)
 
     product = relationship("Product", back_populates="media")

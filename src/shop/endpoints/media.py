@@ -6,7 +6,7 @@ from PIL import Image, UnidentifiedImageError
 from src.shop.db import get_db
 from src.shop.dependencies import get_current_admin
 from src.shop.models import Admin, Media, Product
-from src.shop.schemas.media import MediaPublic
+from src.shop.schemas.media import MediaPublic, MediaOrderUpdate
 
 MAX_IMAGE_SIZE = 5 * 1024 * 1024
 MAX_IMAGE_WIDTH = 5000
@@ -59,6 +59,13 @@ def upload_product_media(
         "image/png",
         "image/webp",
     }
+    media_count = db.query(Media).filter(Media.product_id == product_id).count()
+
+    if media_count >= 6:
+        raise HTTPException(
+            status_code=409,
+            detail="El producto ya tiene el máximo de 6 imágenes",
+        )
 
     if image.content_type not in allowed_types:
         raise HTTPException(
@@ -132,6 +139,72 @@ def upload_product_media(
 
     finally:
         image.file.close()
+
+
+@router.patch(
+    "/{product_id}/media/order",
+    response_model=list[MediaPublic],
+)
+def update_media_order(
+    product_id: int,
+    new_order_media: MediaOrderUpdate,
+    db: Session = Depends(get_db),
+    current_admin: Admin = Depends(get_current_admin),
+):
+    product = (
+        db.query(Product)
+        .filter(Product.id == product_id)
+        .first()
+    )
+
+    if not product:
+        raise HTTPException(
+            status_code=404,
+            detail="Producto no encontrado",
+        )
+
+    requested_ids = new_order_media.media_ids
+
+    if len(requested_ids) != len(set(requested_ids)):
+        raise HTTPException(
+            status_code=400,
+            detail="No se permiten imágenes repetidas",
+        )
+
+    product_media = (
+        db.query(Media)
+        .filter(Media.product_id == product_id)
+        .all()
+    )
+
+    existing_ids = {media.id for media in product_media}
+    requested_id_set = set(requested_ids)
+
+    if existing_ids != requested_id_set:
+        raise HTTPException(
+            status_code=400,
+            detail="La lista debe contener exactamente las imágenes del producto",
+        )
+
+    media_by_id = {
+        media.id: media
+        for media in product_media
+    }
+
+    for sort_order, media_id in enumerate(requested_ids):
+        media = media_by_id[media_id]
+        media.sort_order = sort_order
+
+    try:
+        db.commit()
+    except Exception:
+        db.rollback()
+        raise
+
+    return sorted(
+        product_media,
+        key=lambda media: media.sort_order,
+    )
 
 
 @router.delete(
