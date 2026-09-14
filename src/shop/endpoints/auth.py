@@ -10,6 +10,7 @@ from src.shop.db import get_db
 from src.shop.models import Admin
 from src.shop.schemas.auth import AdminPublic
 from src.shop.security import verify_password
+from src.shop.dependencies import get_current_admin
 
 
 router = APIRouter(prefix="/auth", tags=["auth"])
@@ -69,3 +70,9 @@ def login(
     )
 
     return admin
+
+@router.get("/me", response_model=AdminPublic)
+def get_current_admin_info(
+    current_admin: Admin = Depends(get_current_admin),
+):
+    return current_admin
