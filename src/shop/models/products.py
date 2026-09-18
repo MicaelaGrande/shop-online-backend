@@ -10,6 +10,8 @@ class Product(Base):
     name = Column(String(100), nullable=False)
     description = Column(Text, nullable=True)
     price = Column(Numeric(10, 2), nullable=False)
+    is_on_sale = Column(Boolean, nullable=False, default=False)
+    sale_price = Column(Numeric(10, 2), nullable=True)
     is_active = Column(Boolean, default=True)
 
     categories = relationship("Category", secondary="product_category", back_populates="products")
