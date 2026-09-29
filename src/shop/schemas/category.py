@@ -1,23 +1,16 @@
-from pydantic import BaseModel
-class CategoryPublic(BaseModel):
-    id: int
-    name: str
-
-    class Config:
-        orm_mode = True
-
 from pydantic import BaseModel, field_validator
 
 
 class CategoryPublic(BaseModel):
     id: int
     name: str
+    is_active: bool
 
     class Config:
         from_attributes = True
 
 
-class CategoryCreate(BaseModel):
+class CategoryName(BaseModel):
     name: str
 
     @field_validator("name")
@@ -32,3 +25,14 @@ class CategoryCreate(BaseModel):
             raise ValueError("El nombre no puede superar los 50 caracteres")
 
         return name
+
+
+class CategoryCreate(CategoryName):
+    pass
+
+
+class CategoryUpdate(CategoryName):
+    pass
+
+class CategoryStatusUpdate(BaseModel):
+    is_active: bool
