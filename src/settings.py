@@ -6,6 +6,9 @@ class Settings(BaseSettings):
 
     # Base de datos
     DB_FILENAME: str = "sqlite:///./shop.db"
+    
+    #Productos
+    MAX_PRODUCT_MEDIA: int = 6
 
     # Configuración del servidor
     DEBUG_MODE: bool = True

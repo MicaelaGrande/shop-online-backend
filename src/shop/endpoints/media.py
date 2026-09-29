@@ -1,18 +1,25 @@
 import cloudinary.uploader
-from fastapi import APIRouter, Depends, File, HTTPException, UploadFile
+import logging
+import json
+from fastapi import APIRouter, Depends, File, HTTPException, UploadFile, Form
 from sqlalchemy.orm import Session
 from PIL import Image, UnidentifiedImageError
+from src.settings import settings
 
 from src.shop.db import get_db
 from src.shop.dependencies import get_current_admin
 from src.shop.models import Admin, Media, Product
 from src.shop.schemas.media import MediaPublic, MediaOrderUpdate
+from src.shop.schemas.products import ProductPublic, ProductUpdate
+from src.shop.services.product_service import update_product_with_media
 
 MAX_IMAGE_SIZE = 5 * 1024 * 1024
 MAX_IMAGE_WIDTH = 5000
 MAX_IMAGE_HEIGHT = 5000
 MAX_IMAGE_PIXELS = 25_000_000
 
+
+logger = logging.getLogger(__name__)
 router = APIRouter(prefix="/media_products", tags=["media"])
 
 
@@ -59,12 +66,14 @@ def upload_product_media(
         "image/png",
         "image/webp",
     }
-    media_count = db.query(Media).filter(Media.product_id == product_id).count()
+    media_count = db.query(Media).filter(
+        Media.product_id == product_id).count()
 
-    if media_count >= 6:
+    if media_count >= settings.MAX_PRODUCT_MEDIA:
         raise HTTPException(
             status_code=409,
-            detail="El producto ya tiene el máximo de 6 imágenes",
+            detail="El producto ya tiene el máximo de "
+            f"{settings.MAX_PRODUCT_MEDIA} imágenes",
         )
 
     if image.content_type not in allowed_types:
@@ -245,3 +254,86 @@ def delete_product_media(
         raise
 
     return None
+
+
+@router.patch(
+    "/{product_id}/complete",
+    response_model=ProductPublic,
+)
+def update_product_with_media_endpoint(
+    product_id: int,
+    product_data: str = Form(...),
+    media_to_delete: str = Form("[]"),
+    images: list[UploadFile] = File(default=[]),
+    db: Session = Depends(get_db),
+    current_admin: Admin = Depends(get_current_admin),
+):
+    product = (
+        db.query(Product)
+        .filter(Product.id == product_id)
+        .first()
+    )
+
+    if not product:
+        raise HTTPException(
+            status_code=404,
+            detail="Producto no encontrado",
+        )
+
+    try:
+        parsed_product_data = json.loads(product_data)
+        parsed_media_to_delete = json.loads(media_to_delete)
+
+        product_in = ProductUpdate.model_validate(parsed_product_data)
+
+    except (json.JSONDecodeError, TypeError, ValueError):
+        raise HTTPException(
+            status_code=400,
+            detail="Los datos del producto no son válidos",
+        )
+
+    if not isinstance(parsed_media_to_delete, list):
+        raise HTTPException(
+            status_code=400,
+            detail="La lista de imágenes a eliminar no es válida",
+        )
+
+    try:
+        updated_product, public_ids_to_delete = update_product_with_media(
+            product=product,
+            product_in=product_in,
+            new_images=images,
+            media_to_delete=parsed_media_to_delete,
+            db=db,
+        )
+
+        db.commit()
+        db.refresh(updated_product)
+
+        for public_id in public_ids_to_delete:
+            try:
+                result = cloudinary.uploader.destroy(
+                    public_id,
+                    resource_type="image",
+                )
+
+                if result.get("result") not in {"ok", "not found"}:
+                    logger.warning(
+                        "No se pudo borrar imagen de Cloudinary %s: %s",
+                        public_id,
+                        result,
+                    )
+            except Exception:
+                logger.exception(
+                    "Falló el borrado de imagen de Cloudinary %s",
+                    public_id,
+                )
+
+        return updated_product
+
+    except Exception:
+        db.rollback()
+        raise
+    finally:
+        for image in images:
+            image.file.close()

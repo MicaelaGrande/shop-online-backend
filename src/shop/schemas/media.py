@@ -1,4 +1,5 @@
 from pydantic import BaseModel, Field
+from src.settings import settings
 
 class MediaPublic(BaseModel):
     id: int
@@ -13,5 +14,5 @@ class MediaPublic(BaseModel):
 class MediaOrderUpdate(BaseModel):
     media_ids: list[int] = Field(
         min_length=1,
-        max_length=6,
+        max_length=settings.MAX_PRODUCT_MEDIA,
     )
