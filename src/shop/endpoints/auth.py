@@ -76,3 +76,13 @@ def get_current_admin_info(
     current_admin: Admin = Depends(get_current_admin),
 ):
     return current_admin
+
+@router.post("/logout")
+def logout(response: Response):
+    response.delete_cookie(
+        key=settings.AUTH_COOKIE_NAME,
+        httponly=True,
+        secure=settings.AUTH_COOKIE_SECURE,
+        samesite=settings.AUTH_COOKIE_SAMESITE,
+    )
+    return {"detail": "Sesión cerrada"}

@@ -38,7 +38,7 @@ def create_product(
 ):
     existing = (
         db.query(Product)
-        .filter(Product.name == product_in.name, Product.is_active == True)
+        .filter(Product.name.lower() == product_in.name.lower(), Product.is_active == True)
         .first()
     )
 

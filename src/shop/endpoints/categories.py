@@ -1,4 +1,5 @@
 from fastapi import APIRouter, Depends, HTTPException
+from sqlalchemy import func
 from sqlalchemy.orm import Session
 from sqlalchemy.exc import IntegrityError
 
@@ -36,7 +37,7 @@ def update_category(
     duplicate = (
         db.query(Category)
         .filter(
-            Category.name == category_in.name,
+            func.lower(Category.name) == category_in.name.lower(),
             Category.id != category_id,
         )
         .first()
@@ -69,12 +70,21 @@ def create_category(
     db: Session = Depends(get_db),
     current_admin: Admin = Depends(get_current_admin),
 ):
-    existing = (db.query(Category).filter(
-        Category.name == category_in.name)).first()
+    normalized_name = category_in.name.strip().lower() if category_in.name else None
+
+    if normalized_name is not None:
+        existing = (
+            db.query(Category)
+            .filter(func.lower(Category.name) == normalized_name)
+            .first()
+        )
+    else:
+        existing = None
 
     if existing:
         raise HTTPException(
-            status_code=400, detail="Ya existe una categoria con ese nombre"
+            status_code=400,
+            detail="Ya existe una categoria con ese nombre",
         )
     category = Category(name=category_in.name)
     db.add(category)

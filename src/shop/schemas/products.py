@@ -42,7 +42,7 @@ class ProductCreate(BaseModel):
                 "El nombre del producto no puede superar los 100 caracteres"
             )
 
-        return name.strip().lower()
+        return name.strip()
     
     @model_validator(mode="after")
     def validate_sale(self):
@@ -88,4 +88,4 @@ class ProductUpdate(BaseModel):
         if len(name) > 100:
             raise ValueError("El nombre no puede superar los 100 caracteres")
 
-        return name.strip().lower()
+        return name.strip()

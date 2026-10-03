@@ -16,7 +16,7 @@ class CategoryName(BaseModel):
     @field_validator("name")
     @classmethod
     def validate_name(cls, name):
-        name = name.strip().lower()
+        name = name.strip()
 
         if len(name) < 2:
             raise ValueError("El nombre debe tener al menos 2 caracteres")
