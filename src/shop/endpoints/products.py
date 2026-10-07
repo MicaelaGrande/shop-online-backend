@@ -1,4 +1,5 @@
-from fastapi import APIRouter, Depends, HTTPException
+from fastapi import APIRouter, Depends, HTTPException, Query
+from sqlalchemy import or_
 from sqlalchemy.orm import Session
 
 
@@ -17,6 +18,51 @@ def get_products(db: Session = Depends(get_db)):
     products = db.query(Product).filter(Product.is_active == True).all()
     return products
 
+
+@router.get("/search", response_model=list[ProductPublic])
+def search_products(
+    q: str = Query(..., min_length=1),
+    db: Session = Depends(get_db),
+):
+    search_term = q.strip()
+
+    if not search_term:
+        return []
+
+    return (
+        db.query(Product)
+        .filter(
+            Product.is_active == True,
+            or_(
+                Product.name.ilike(f"%{search_term}%"),
+                Product.description.ilike(f"%{search_term}%"),
+            ),
+        )
+        .all()
+    )
+
+@router.get("/admin/deleted/search", response_model=list[ProductPublic])
+def search_deleted_products(
+    q: str = Query(..., min_length=1),
+    db: Session = Depends(get_db),
+    current_admin: Admin = Depends(get_current_admin),
+):
+    search_term = q.strip()
+
+    if not search_term:
+        return []
+
+    return (
+        db.query(Product)
+        .filter(
+            Product.is_active == False,
+            or_(
+                Product.name.ilike(f"%{search_term}%"),
+                Product.description.ilike(f"%{search_term}%"),
+            ),
+        )
+        .all()
+    )
 
 @router.get("/{product_id}", response_model=ProductPublic)
 def get_products(product_id: int, db: Session = Depends(get_db)):
