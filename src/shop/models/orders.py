@@ -1,4 +1,4 @@
-from sqlalchemy import Column, Integer, String, DateTime, Enum, Text
+from sqlalchemy import Column, Integer, String, DateTime, Enum, Text, ForeignKey
 from sqlalchemy.orm import relationship, mapped_column, Mapped
 from src.shop.db import Base
 from datetime import datetime
@@ -20,6 +20,19 @@ class Order(Base):
     customer_name = Column(String(80), nullable=False)
     customer_phone = Column(String(50), nullable=False)
     customer_address = Column(String(255), nullable=True)
+    assigned_admin_id = Column(Integer, ForeignKey("admin.id"), nullable=False)
+    processed_by_admin_id = Column(Integer, ForeignKey("admin.id"), nullable=True)
     comments = Column(Text, nullable=True)
 
-    items = relationship("OrderItem", back_populates="order", cascade="all, delete-orphan")
+    items = relationship(
+        "OrderItem", back_populates="order", cascade="all, delete-orphan"
+    )
+    assigned_admin = relationship(
+    "Admin",
+    foreign_keys=[assigned_admin_id],
+)
+
+    processed_by_admin = relationship(
+        "Admin",
+        foreign_keys=[processed_by_admin_id],
+    )
