@@ -10,16 +10,19 @@ from src.shop.security import hash_password
 
 
 def main() -> None:
+    name = input("Nombre del administrador: ").strip()
+    whatsapp_phone = input("WhatsApp con código de país: ").strip()
     email = input("Email del administrador: ").strip()
     password = getpass("Contraseña: ")
     password_confirmation = getpass("Repite la contraseña: ")
+   
 
     if password != password_confirmation:
         print("Las contraseñas no coinciden")
         return
 
     try:
-        admin_data = AdminCreate(email=email, password=password)
+        admin_data = AdminCreate(name=name, whatsapp_phone=whatsapp_phone ,email=email, password=password,)
     except ValidationError as error:
         print("Los datos no son válidos:")
         print(error)
@@ -39,6 +42,8 @@ def main() -> None:
             return
 
         admin = Admin(
+            name=admin_data.name,
+            whatsapp_phone=admin_data.whatsapp_phone,
             email=admin_data.email,
             password_hash=hash_password(admin_data.password),
         )
