@@ -5,8 +5,17 @@ from src.shop.db import get_db
 from src.shop.models import Product, Order, OrderItem, Admin
 from src.shop.models.orders import OrderStatus
 from src.shop.schemas.orders import OrderCreate
+from src.shop.schemas.auth import AdminContactPublic
 
 router = APIRouter(prefix="/orders", tags=["orders"])
+@router.get("/admins", response_model=list[AdminContactPublic])
+def get_order_admins(db: Session = Depends(get_db)):
+    return (
+        db.query(Admin)
+        .filter(Admin.is_active.is_(True))
+        .order_by(Admin.name.asc())
+        .all()
+    )
 
 
 @router.post("/")

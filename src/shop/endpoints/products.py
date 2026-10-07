@@ -1,5 +1,5 @@
 from fastapi import APIRouter, Depends, HTTPException, Query
-from sqlalchemy import or_
+from sqlalchemy import func, or_
 from sqlalchemy.orm import Session
 
 
@@ -84,7 +84,7 @@ def create_product(
 ):
     existing = (
         db.query(Product)
-        .filter(Product.name.lower() == product_in.name.lower(), Product.is_active == True)
+        .filter(func.lower(Product.name) == product_in.name.lower(), Product.is_active == True)
         .first()
     )
 
