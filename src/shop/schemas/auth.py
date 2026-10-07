@@ -11,6 +11,15 @@ class AdminLogin(BaseModel):
     password: str
 
 
+class AdminContactPublic(BaseModel):
+    id: int
+    name: str
+    whatsapp_phone: str
+
+    class Config:
+        from_attributes = True
+
+
 class Token(BaseModel):
     access_token: str
     token_type: str
