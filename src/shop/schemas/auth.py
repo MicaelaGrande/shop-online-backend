@@ -2,6 +2,8 @@ from pydantic import BaseModel, EmailStr, Field
 
 
 class AdminCreate(BaseModel):
+    name: str
+    whatsapp_phone: str
     email: EmailStr
     password: str = Field(min_length=12, max_length=128)
 
