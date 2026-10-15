@@ -1,10 +1,22 @@
 from pydantic import BaseModel, field_validator
+from enum import Enum
+
+class CategoryIconKey(str, Enum):
+    TAGS = "tags"
+    SHOPPING_BAG = "shopping-bag"
+    LAPTOP = "laptop"
+    BLOCKS = "blocks"
+    ZAP = "zap"
+    SHIRT = "shirt"
+    COFFEE = "coffee"
+    HOUSE = "house"
 
 
 class CategoryPublic(BaseModel):
     id: int
     name: str
     is_active: bool
+    icon_key: CategoryIconKey
 
     class Config:
         from_attributes = True
@@ -12,6 +24,7 @@ class CategoryPublic(BaseModel):
 
 class CategoryName(BaseModel):
     name: str
+    icon_key: CategoryIconKey = CategoryIconKey.TAGS
 
     @field_validator("name")
     @classmethod

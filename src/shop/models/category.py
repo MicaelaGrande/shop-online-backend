@@ -8,6 +8,12 @@ class Category(Base):
     id: Mapped[int] = mapped_column(Integer, primary_key=True, autoincrement=True)
     name = Column(String(50), nullable=False, unique=True)
     is_active = Column(Boolean, default=True)
+    icon_key: Mapped[str] = mapped_column(
+        String(40),
+        nullable=False,
+        default="tags",
+        server_default="tags",
+    )
 
     # La relacion entre tablas Category-Product es con una tabla intermedia pura, sin atributos por eso se usa asi relationship
     products= relationship("Product", secondary="product_category", back_populates="categories" )

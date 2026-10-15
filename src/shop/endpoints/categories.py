@@ -5,8 +5,8 @@ from sqlalchemy.exc import IntegrityError
 
 from src.shop.db import get_db
 from src.shop.models import Category, Admin
-from src.shop.schemas.category import CategoryCreate, CategoryPublic, CategoryUpdate, CategoryStatusUpdate
-from src.shop.dependencies import get_current_admin
+from src.shop.schemas.category import CategoryCreate, CategoryPublic, CategoryUpdate, CategoryStatusUpdate, CategoryIconKey
+from src.shop.dependencies import get_current_admin 
 
 
 router = APIRouter(prefix="/categories", tags=["categories"])
@@ -21,6 +21,9 @@ def get_categories(db: Session = Depends(get_db)):
         .all()
     )
 
+@router.get("/icons", response_model=list[CategoryIconKey])
+def get_category_icons():
+    return list(CategoryIconKey)
 
 @router.patch("/{category_id}", response_model=CategoryPublic)
 def update_category(
@@ -50,6 +53,7 @@ def update_category(
         )
 
     category.name = category_in.name
+    category.icon_key = category_in.icon_key.value
 
     try:
         db.commit()
@@ -86,7 +90,10 @@ def create_category(
             status_code=400,
             detail="Ya existe una categoria con ese nombre",
         )
-    category = Category(name=category_in.name)
+    category = Category(
+    name=category_in.name,
+    icon_key=category_in.icon_key.value,
+    )
     db.add(category)
     db.commit()
     db.refresh(category)
