@@ -8,6 +8,7 @@ from src.shop.endpoints.categories import router as categories_router
 from src.shop.endpoints.auth import router as auth_router
 from src.shop.endpoints.media import router as media_router
 from src.shop.endpoints.orders import router as orders_router
+from src.shop.endpoints.banner import router as banner_router
 
 # Crear la aplicación
 app = FastAPI(title="Mixshop")
@@ -27,6 +28,7 @@ app.include_router(categories_router)
 app.include_router(auth_router)
 app.include_router(media_router)
 app.include_router(orders_router)
+app.include_router(banner_router)
 
 
 # Endpoints de prueba

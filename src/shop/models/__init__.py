@@ -7,3 +7,5 @@ from .orders import Order
 from .orderItems import OrderItem
 from .productCategory import ProductCategory
 from .admin import Admin
+from .banner import Banner
+from .banner import BannerSettings
