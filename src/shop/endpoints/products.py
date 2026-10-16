@@ -14,10 +14,21 @@ router = APIRouter(prefix="/products", tags=["products"])
 
 # Nota mental de funcionamiento: Cuando llegue un GET a /products, llamá a get_products función
 @router.get("/", response_model=list[ProductPublic])
-def get_products(db: Session = Depends(get_db)):
-    products = db.query(Product).filter(Product.is_active == True).all()
-    return products
+def get_products(
+    limit: int | None = Query(default=None, ge=1, le=100),
+    offset: int = Query(default=0, ge=0),
+    db: Session = Depends(get_db),
+):
+    query = (
+        db.query(Product)
+        .filter(Product.is_active == True)
+        .order_by(Product.id.asc())
+    )
 
+    if limit is not None:
+        query = query.offset(offset).limit(limit)
+
+    return query.all()
 
 @router.get("/search", response_model=list[ProductPublic])
 def search_products(
@@ -65,7 +76,10 @@ def search_deleted_products(
     )
 
 @router.get("/{product_id}", response_model=ProductPublic)
-def get_products(product_id: int, db: Session = Depends(get_db)):
+def get_products(product_id: int, 
+                 limit: int | None = Query(default=None, ge=1, le=100),
+                 offset: int = Query(default=0, ge=0),
+                 db: Session = Depends(get_db)):
     product = (
         db.query(Product)
         .filter(Product.id == product_id, Product.is_active == True)
